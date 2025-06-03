@@ -3,10 +3,7 @@ import express, { Request, Response } from "express";
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-const prisma = new PrismaClient();
-
-const route = express.Router();
+export const prisma = new PrismaClient();
 
 app.use(express.json());
 

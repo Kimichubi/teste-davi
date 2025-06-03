@@ -5,9 +5,9 @@ import {
   IPollReponseCreateDto,
   IPollReponseEditDto,
 } from "../models/IPollResponse";
-import PollResponses from "./PollResponse";
+import PollResponses from "./PollResponseService";
 
-export default class Poll {
+export default class PollService {
   prisma: PrismaClient;
   pollResponseService: PollResponses;
 
@@ -16,10 +16,10 @@ export default class Poll {
     this.pollResponseService = new PollResponses(this.prisma);
   }
 
-  async list(page: string) {
+  async list(page: number) {
     const polls = await this.prisma.poll.findMany({
       take: 10,
-      skip: (page ? Number(page) : 1) * 10,
+      skip: (page ? page : 1) * 10,
       include: {
         _count: true,
         pollResponses: true,
@@ -67,24 +67,22 @@ export default class Poll {
     return { data: { poll, pollResponses } };
   }
 
-  async editPollAndResponse(
-    pollId: number,
-    pollResponseId: number[],
-    body: {
-      pollEditedBody: IPollEditDto;
-      pollResponsesEdited: IPollReponseEditDto[];
-    }
-  ) {
-    if (pollId) {
+  async editPollAndResponse(body: {
+    pollEditedBody: IPollEditDto;
+    pollResponsesEdited: IPollReponseEditDto[];
+    pollId: number;
+    pollResponsesId: number[];
+  }) {
+    if (body.pollId) {
       const poll = await this.prisma.poll.update({
         where: {
-          id: pollId,
+          id: body.pollId,
         },
         data: body.pollEditedBody,
       });
-      if (pollResponseId) {
+      if (body.pollResponsesId) {
         const pollResponses = await this.pollResponseService.editResponse(
-          pollResponseId,
+          body.pollResponsesId,
           {
             pollResponseEdited: body.pollResponsesEdited,
           }
@@ -94,19 +92,22 @@ export default class Poll {
       return { data: poll };
     }
 
-    if (pollResponseId) {
+    if (body.pollResponsesId) {
       const pollResponses = await this.pollResponseService.editResponse(
-        pollResponseId,
+        body.pollResponsesId,
         {
           pollResponseEdited: body.pollResponsesEdited,
         }
       );
-      return { data: { pollResponses } };
+      return { data: pollResponses };
     }
   }
 
-  async deletePollAndResponse(pollId: number, pollResponsesId: number[]) {
-    this.pollResponseService.deleteResponse(pollResponsesId);
-    await this.prisma.poll.delete({ where: { id: pollId } });
+  async deletePollAndResponse(body: {
+    pollId: number;
+    pollResponsesId: number[];
+  }) {
+    this.pollResponseService.deleteResponse(body.pollResponsesId);
+    await this.prisma.poll.delete({ where: { id: body.pollId } });
   }
 }

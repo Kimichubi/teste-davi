@@ -4,7 +4,7 @@ import {
   IPollReponseEditDto,
 } from "../models/IPollResponse";
 
-export default class PollResponses {
+export default class PollResponsesService {
   prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
