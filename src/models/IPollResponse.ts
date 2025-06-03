@@ -9,10 +9,9 @@ export default interface IPollReponse {
 }
 export interface IPollReponseCreateDto {
   title: string;
-  vote: number;
-  pollId: number;
 }
 export interface IPollReponseEditDto {
+  id: number;
   title?: string;
   vote?: number;
   pollId?: number;

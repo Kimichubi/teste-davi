@@ -1,38 +1,37 @@
 import { PrismaClient } from "@prisma/client";
-import { skip } from "@prisma/client/runtime/library";
-import IPoll, { IPollCreateDto, IPollEditDto } from "../models/IPoll";
+import { IPollCreateDto, IPollEditDto } from "../models/IPoll";
 import {
   IPollReponseCreateDto,
   IPollReponseEditDto,
 } from "../models/IPollResponse";
 import PollResponses from "./PollResponseService";
+import { prisma } from "../index";
 
 export default class PollService {
-  prisma: PrismaClient;
   pollResponseService: PollResponses;
 
-  constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
-    this.pollResponseService = new PollResponses(this.prisma);
+  constructor() {
+    this.pollResponseService = new PollResponses();
   }
 
   async list(page: number) {
-    const polls = await this.prisma.poll.findMany({
+    const polls = await prisma.poll.findMany({
       take: 10,
-      skip: (page ? page : 1) * 10,
+      skip: (page - 1) * 10,
       include: {
         _count: true,
         pollResponses: true,
       },
     });
-    if (!polls) {
+
+    if (polls.length < 1) {
       return { message: "Nenhuma Enquete foi encontrada!" };
     }
     return { data: polls };
   }
 
   async listById(id: number) {
-    const poll = await this.prisma.poll.findUnique({
+    const poll = await prisma.poll.findUnique({
       where: {
         id,
       },
@@ -51,7 +50,7 @@ export default class PollService {
     pollBody: IPollCreateDto;
     pollResponse: IPollReponseCreateDto[];
   }) {
-    const poll = await this.prisma.poll.create({
+    const poll = await prisma.poll.create({
       data: body.pollBody,
     });
 
@@ -59,45 +58,40 @@ export default class PollService {
       return { message: "Não foi possível criar a enquete" };
     }
 
-    const pollResponses = this.pollResponseService.createResponse({
+    const pollResponses = await this.pollResponseService.createResponse({
       pollResponse: body.pollResponse,
       pollId: poll.id,
     });
 
-    return { data: { poll, pollResponses } };
+    return { data: pollResponses };
   }
 
-  async editPollAndResponse(body: {
-    pollEditedBody: IPollEditDto;
-    pollResponsesEdited: IPollReponseEditDto[];
-    pollId: number;
-    pollResponsesId: number[];
-  }) {
-    if (body.pollId) {
-      const poll = await this.prisma.poll.update({
+  async editPollAndResponse(
+    pollId: number,
+    body: {
+      pollEditedBody: IPollEditDto;
+      pollResponsesEdited: IPollReponseEditDto[];
+    }
+  ) {
+    if (pollId) {
+      const poll = await prisma.poll.update({
         where: {
-          id: body.pollId,
+          id: pollId,
         },
         data: body.pollEditedBody,
       });
-      if (body.pollResponsesId) {
+      if (body.pollResponsesEdited) {
         const pollResponses = await this.pollResponseService.editResponse(
-          body.pollResponsesId,
-          {
-            pollResponseEdited: body.pollResponsesEdited,
-          }
+          body.pollResponsesEdited
         );
         return { data: { poll, pollResponses } };
       }
       return { data: poll };
     }
 
-    if (body.pollResponsesId) {
+    if (body.pollResponsesEdited) {
       const pollResponses = await this.pollResponseService.editResponse(
-        body.pollResponsesId,
-        {
-          pollResponseEdited: body.pollResponsesEdited,
-        }
+        body.pollResponsesEdited
       );
       return { data: pollResponses };
     }
@@ -107,7 +101,14 @@ export default class PollService {
     pollId: number;
     pollResponsesId: number[];
   }) {
-    this.pollResponseService.deleteResponse(body.pollResponsesId);
-    await this.prisma.poll.delete({ where: { id: body.pollId } });
+    if (body.pollId) {
+      await prisma.pollResponse.deleteMany({ where: { pollId: body.pollId } });
+      await prisma.poll.delete({ where: { id: body.pollId } });
+      return;
+    }
+    if (body.pollResponsesId) {
+      this.pollResponseService.deleteResponse(body.pollResponsesId);
+      return;
+    }
   }
 }

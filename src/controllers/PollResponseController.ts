@@ -1,23 +1,25 @@
-import { PrismaClient } from "@prisma/client";
 import PollService from "../services/PollService";
 import { Request, Response } from "express";
 import PollResponsesService from "../services/PollResponseService";
-import { prisma } from "../index";
 
 export default class PollResponsesController {
   pollService: PollService;
   pollResponsesService: PollResponsesService;
   constructor() {
-    this.pollService = new PollService(prisma);
-    this.pollResponsesService = new PollResponsesService(prisma);
+    this.pollService = new PollService();
+    this.pollResponsesService = new PollResponsesService();
+    this.atributeVote = this.atributeVote.bind(this);
   }
 
   async atributeVote(req: Request, res: Response) {
-    const { pollResponseId } = req.params;
+    const { id } = req.params;
     this.pollResponsesService
-      .atributeVote(Number(pollResponseId))
+      .atributeVote(Number(id))
       .then((data) => {
-        res.status(201).json(data);
+        if (data?.message) {
+          return res.status(400).json(data);
+        }
+        return res.status(201).json(data.data);
       })
       .catch((error) => {
         res.status(401).json({ error: `Error : ${error}` });
