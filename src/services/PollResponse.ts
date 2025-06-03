@@ -11,6 +11,25 @@ export default class PollResponses {
     this.prisma = prisma;
   }
 
+  async atributeVote(pollResponseId: number) {
+    if (!pollResponseId) {
+      return { message: "Id não informado da resposta da enquete" };
+    }
+    const pollResponseToUpdate = await this.prisma.pollResponse.findUnique({
+      where: { id: pollResponseId },
+    });
+    if (!pollResponseToUpdate) {
+      return { message: "Resposta de enquete não encontrada" };
+    }
+    this.prisma.pollResponse.update({
+      where: {
+        id: pollResponseToUpdate.id,
+      },
+      data: {
+        vote: (pollResponseToUpdate.vote += 1),
+      },
+    });
+  }
   async createResponse(body: {
     pollResponse: IPollReponseCreateDto[];
     pollId: number;
@@ -18,7 +37,11 @@ export default class PollResponses {
     const pollResponses = new Array();
     for (let i = 0; i < body.pollResponse.length; i++) {
       const pollResponse = await this.prisma.pollResponse.createMany({
-        data: body.pollResponse[i],
+        data: {
+          pollId: body.pollResponse[i].pollId,
+          title: body.pollResponse[i].title,
+          vote: 0,
+        },
       });
       pollResponses.push(pollResponse);
     }
