@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { IPollCreateDto, IPollEditDto } from "../models/IPoll";
 import {
@@ -55,13 +54,12 @@ export default class PollService {
       return { message: "Minímo de respostas não foi criado!" };
     }
 
-    const editUrlToken = randomUUID();
     const poll = await prisma.poll.create({
       data: {
         dateToEnd: body.pollBody.dateToEnd,
         dateToInit: body.pollBody.dateToInit,
         title: body.pollBody.title,
-        urlToEdit: editUrlToken,
+        urlToEdit: randomUUID(),
       },
     });
 
@@ -91,6 +89,7 @@ export default class PollService {
         },
         data: body.pollEditedBody,
       });
+
       if (body.pollResponsesEdited) {
         const pollResponses = await this.pollResponseService.editResponse(
           body.pollResponsesEdited

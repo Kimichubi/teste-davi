@@ -1,6 +1,5 @@
 import PollService from "../services/PollService";
 import { Request, Response } from "express";
-import { prisma } from "../index";
 
 export default class PollController {
   pollService: PollService;
@@ -31,7 +30,7 @@ export default class PollController {
   }
   async listById(req: Request, res: Response) {
     const { id } = req.params;
-    this.pollService
+    await this.pollService
       .listById(Number(id))
       .then((data) => {
         if (data.message) {
@@ -45,8 +44,7 @@ export default class PollController {
   }
   async createPollAndResponses(req: Request, res: Response) {
     const body = req.body;
-
-    this.pollService
+    await this.pollService
       .createPollAndResponses(body)
       .then((data) => {
         if (data.message) {
@@ -61,7 +59,7 @@ export default class PollController {
   async editPollAndResponse(req: Request, res: Response) {
     const { pollUrlToEdit } = req.params;
     const body = req.body;
-    this.pollService
+    await this.pollService
       .editPollAndResponse(pollUrlToEdit, body)
       .then((data) => {
         res.status(200).json(data);
@@ -72,7 +70,7 @@ export default class PollController {
   }
   async deletePollAndResponse(req: Request, res: Response) {
     const body = req.body;
-    this.pollService
+    await this.pollService
       .deletePollAndResponse(body)
       .then((data) => {
         res.status(200).json(data);

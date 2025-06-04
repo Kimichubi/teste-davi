@@ -57,7 +57,9 @@ export default class PollResponsesService {
         where: {
           id: pollResponseEdited[i].id,
         },
-        data: pollResponseEdited[i],
+        data: {
+          title: pollResponseEdited[i].title,
+        },
       });
       pollResponses.push(pollResponse);
     }
