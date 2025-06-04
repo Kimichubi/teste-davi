@@ -59,10 +59,10 @@ export default class PollController {
       });
   }
   async editPollAndResponse(req: Request, res: Response) {
-    const { id } = req.params;
+    const { pollUrlToEdit } = req.params;
     const body = req.body;
     this.pollService
-      .editPollAndResponse(Number(id), body)
+      .editPollAndResponse(pollUrlToEdit, body)
       .then((data) => {
         res.status(200).json(data);
       })

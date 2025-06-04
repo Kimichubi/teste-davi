@@ -3,27 +3,27 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql" 
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-
 model Poll {
-  id        Int      @id @default(autoincrement())
-  title      String   
-  dateToInit DateTime 
-  dateToEnd  DateTime 
+  id            Int            @id @default(autoincrement())
+  title         String
+  dateToInit    DateTime
+  dateToEnd     DateTime
+  urlToEdit     String         @unique
   pollResponses PollResponse[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model PollResponse {
   id        Int      @id @default(autoincrement())
-  title      String   
-  vote    Int
-  pollId Int  
-  poll Poll @relation(fields: [pollId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  title     String
+  vote      Int
+  pollId    Int
+  poll      Poll     @relation(fields: [pollId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

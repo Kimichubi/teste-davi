@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { randomUUID } from "crypto";
 import { IPollCreateDto, IPollEditDto } from "../models/IPoll";
 import {
   IPollReponseCreateDto,
@@ -53,8 +54,15 @@ export default class PollService {
     if (body.pollResponse.length < 3) {
       return { message: "Minímo de respostas não foi criado!" };
     }
+
+    const editUrlToken = randomUUID();
     const poll = await prisma.poll.create({
-      data: body.pollBody,
+      data: {
+        dateToEnd: body.pollBody.dateToEnd,
+        dateToInit: body.pollBody.dateToInit,
+        title: body.pollBody.title,
+        urlToEdit: editUrlToken,
+      },
     });
 
     if (!poll) {
@@ -70,16 +78,16 @@ export default class PollService {
   }
 
   async editPollAndResponse(
-    pollId: number,
+    pollUrlToEdit: string,
     body: {
       pollEditedBody: IPollEditDto;
       pollResponsesEdited: IPollReponseEditDto[];
     }
   ) {
-    if (pollId) {
+    if (pollUrlToEdit) {
       const poll = await prisma.poll.update({
         where: {
-          id: pollId,
+          urlToEdit: pollUrlToEdit,
         },
         data: body.pollEditedBody,
       });
@@ -90,13 +98,6 @@ export default class PollService {
         return { data: { poll, pollResponses } };
       }
       return { data: poll };
-    }
-
-    if (body.pollResponsesEdited) {
-      const pollResponses = await this.pollResponseService.editResponse(
-        body.pollResponsesEdited
-      );
-      return { data: pollResponses };
     }
   }
 
