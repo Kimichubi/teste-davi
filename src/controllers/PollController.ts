@@ -15,6 +15,7 @@ export default class PollController {
 
   async list(req: Request, res: Response) {
     const { page } = req.query;
+
     await this.pollService
       .list(Number(page))
       .then((data) => {
@@ -44,6 +45,7 @@ export default class PollController {
   }
   async createPollAndResponses(req: Request, res: Response) {
     const body = req.body;
+
     this.pollService
       .createPollAndResponses(body)
       .then((data) => {

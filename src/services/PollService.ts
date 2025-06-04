@@ -50,6 +50,9 @@ export default class PollService {
     pollBody: IPollCreateDto;
     pollResponse: IPollReponseCreateDto[];
   }) {
+    if (body.pollResponse.length < 3) {
+      return { message: "Minímo de respostas não foi criado!" };
+    }
     const poll = await prisma.poll.create({
       data: body.pollBody,
     });
