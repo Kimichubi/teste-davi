@@ -45,7 +45,21 @@ export default class PollService {
     }
     return { data: poll };
   }
+  async listByUrl(pollUrlToEdit: string) {
+    const poll = await prisma.poll.findUnique({
+      where: {
+        urlToEdit: pollUrlToEdit,
+      },
+      include: {
+        pollResponses: true,
+      },
+    });
 
+    if (!poll) {
+      return { message: "Esta enquete não existe!" };
+    }
+    return { data: poll };
+  }
   async createPollAndResponses(body: {
     pollBody: IPollCreateDto;
     pollResponse: IPollReponseCreateDto[];

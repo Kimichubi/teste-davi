@@ -6,8 +6,9 @@ const pollController = new PollController();
 
 router.get("/poll", pollController.list);
 router.get("/poll/:id", pollController.listById);
+router.get("/poll/getByUrl/:pollUrlToEdit", pollController.listByUrl);
 router.post("/poll", pollController.createPollAndResponses);
-router.put("/poll/:pollUrlToEdit", pollController.editPollAndResponse);
+router.put("/poll/edit/:pollUrlToEdit", pollController.editPollAndResponse);
 router.post("/delete/poll", pollController.deletePollAndResponse);
 
 export default router;

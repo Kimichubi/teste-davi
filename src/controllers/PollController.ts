@@ -7,6 +7,7 @@ export default class PollController {
     this.pollService = new PollService();
     this.list = this.list.bind(this);
     this.listById = this.listById.bind(this);
+    this.listByUrl = this.listByUrl.bind(this);
     this.createPollAndResponses = this.createPollAndResponses.bind(this);
     this.editPollAndResponse = this.editPollAndResponse.bind(this);
     this.deletePollAndResponse = this.deletePollAndResponse.bind(this);
@@ -32,6 +33,20 @@ export default class PollController {
     const { id } = req.params;
     await this.pollService
       .listById(Number(id))
+      .then((data) => {
+        if (data.message) {
+          return res.status(404).json(data);
+        }
+        return res.status(201).json(data);
+      })
+      .catch((error) => {
+        res.status(401).json({ error: `Error : ${error}` });
+      });
+  }
+  async listByUrl(req: Request, res: Response) {
+    const { pollUrlToEdit } = req.params;
+    await this.pollService
+      .listByUrl(pollUrlToEdit)
       .then((data) => {
         if (data.message) {
           return res.status(404).json(data);
